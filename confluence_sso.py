@@ -10,6 +10,7 @@ import requests
 import json
 from pathlib import Path
 from urllib.parse import urljoin, urlparse, parse_qs
+from datetime import datetime
 import re
 
 class ConfluenceSSO:
@@ -125,6 +126,20 @@ class ConfluenceSSO:
             return response.json()
         else:
             raise Exception(f"Update Error: {response.status_code} - {response.text}")
+    
+    def create_backup(self, content, prefix="confluence_backup"):
+        """Erstellt ein zeitgestempeltes Backup im backups/ Ordner"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_dir = Path("backups")
+        backup_dir.mkdir(exist_ok=True)
+        
+        backup_file = backup_dir / f"{prefix}_{timestamp}.html"
+        
+        with open(backup_file, "w", encoding="utf-8") as f:
+            f.write(content)
+        
+        print(f"💾 Backup gespeichert: {backup_file}")
+        return backup_file
 
 def main():
     """Hauptfunktion für SSO-basierte Confluence-Nutzung"""
@@ -153,10 +168,7 @@ def main():
                         print(f"Content-Länge: {len(page['body']['storage']['value'])} Zeichen")
                         
                         # Backup erstellen
-                        backup_file = Path("racoon_publications_sso_backup.html")
-                        with open(backup_file, "w", encoding="utf-8") as f:
-                            f.write(page['body']['storage']['value'])
-                        print(f"💾 Backup gespeichert: {backup_file}")
+                        confluence_sso.create_backup(page['body']['storage']['value'], "racoon_publications_sso")
                         
                     except Exception as e:
                         print(f"❌ Seiten-Zugriff fehlgeschlagen: {e}")

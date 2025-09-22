@@ -87,7 +87,7 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-backups/
+backups/*.html
 *.backup.html
 test_data/
 logs/

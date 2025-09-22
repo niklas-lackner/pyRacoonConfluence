@@ -80,6 +80,7 @@ python confluence_sso.py
 pyRacoonConfluence/
 ├── confluence_sso.py          # SSO-Authentifizierung (Kern-Modul)
 ├── racoon_test_update.py      # Publikations-Management
+├── backups/                   # Zeitgestempelte Backup-Dateien
 ├── requirements.txt           # Python-Dependencies
 ├── README.md                  # Diese Dokumentation
 ├── LICENSE                    # MIT-Lizenz
@@ -118,9 +119,24 @@ Die verwaltete Tabelle enthält folgende Spalten:
 ## 🛡️ Sicherheitsfeatures
 
 - **Keine Klartext-Passwörter** - Verwendet Browser-Session-Cookies
-- **Automatische Backups** - Erstellt Sicherungen vor Änderungen
+- **Automatische Backups** - Zeitgestempelte Backups im `backups/` Ordner
 - **Session-Validierung** - Überprüft Cookie-Gültigkeit
 - **Sichere Speicherung** - Sensible Daten in `.gitignore`
+
+## 💾 Backup-System
+
+Alle Änderungen werden automatisch mit Zeitstempel gesichert:
+
+```
+backups/
+├── racoon_publications_sso_20240922_161904.html
+├── racoon_publications_with_test_20240922_161913.html
+└── .gitkeep
+```
+
+**Backup-Naming:**
+- `racoon_publications_sso_YYYYMMDD_HHMMSS.html` - SSO-Authentifizierung-Backups
+- `racoon_publications_with_test_YYYYMMDD_HHMMSS.html` - Test-Operation-Backups
 
 ## 🧪 Sicherheits-Testing
 
@@ -133,6 +149,35 @@ python racoon_test_update.py --remove # Test-Publikation entfernen
 
 # Nur Verbindung testen (ohne Änderungen)
 python confluence_sso.py
+
+# Status der Publikationstabelle prüfen
+python table_status.py
+```
+
+### 📖 Detaillierter Beispiel-Workflow
+
+Einen kompletten dokumentierten Workflow mit erwarteten Ausgaben finden Sie in:
+**→ [EXAMPLE_WORKFLOW.md](EXAMPLE_WORKFLOW.md)**
+
+Dieses Beispiel zeigt Schritt-für-Schritt:
+- ✅ Sichere TEST-Zeile hinzufügen
+- 🔍 Status-Überprüfung
+- 🗑️ Automatische Bereinigung
+- 📊 Größenvergleiche und Validierung
+
+**Schnelltest:**
+```bash
+# 1. TEST-Zeile hinzufügen
+python racoon_test_update.py --add
+
+# 2. Status prüfen  
+python table_status.py
+
+# 3. TEST-Zeile entfernen
+python racoon_test_update.py --remove
+
+# 4. Finaler Check
+python table_status.py
 ```
 
 ## ⚠️ Wichtige Hinweise
@@ -163,9 +208,10 @@ pip install --upgrade -r requirements.txt
 
 ### Logs und Backups
 
-- Backup-Dateien werden als `.html` im Projektverzeichnis gespeichert
+- Backup-Dateien werden zeitgestempelt im `backups/` Ordner gespeichert
 - Cookie-Sessions werden automatisch validiert
 - Alle API-Operationen werden mit Status-Codes protokolliert
+- Backup-Format: `prefix_YYYYMMDD_HHMMSS.html`
 
 ## 📝 Lizenz
 

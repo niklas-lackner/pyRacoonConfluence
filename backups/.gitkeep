@@ -1,0 +1,18 @@
+# Backup Directory for pyRacoonConfluence
+
+This directory contains timestamped backups of RACOON publication pages.
+
+## File Naming Convention
+
+- `racoon_publications_sso_YYYYMMDD_HHMMSS.html` - SSO authentication backups
+- `racoon_publications_with_test_YYYYMMDD_HHMMSS.html` - Test operation backups
+
+## Automatic Cleanup
+
+Backup files are automatically created before any changes to Confluence pages.
+Consider periodic cleanup of old backup files to manage disk space.
+
+## Note
+
+Backup files (*.html) are excluded from Git commits for security and space reasons,
+but this directory structure is maintained in the repository.

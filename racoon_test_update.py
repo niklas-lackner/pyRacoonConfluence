@@ -6,26 +6,46 @@ Fügt eine Test-Zeile zur Tabelle hinzu
 """
 
 import sys
+import json
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 from confluence_sso import ConfluenceSSO
 
+def load_saved_cookies():
+    """Lädt gespeicherte Cookies aus der Credentials-Datei"""
+    try:
+        with open('confluence_credentials.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get('cookies', '')
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        return None
+
+def get_cookies():
+    """Holt Cookies - automatisch oder manuell"""
+    saved_cookies = load_saved_cookies()
+    
+    if saved_cookies:
+        print("📋 Verwende gespeicherte Cookies...")
+        return saved_cookies
+    else:
+        return input("🔑 Cookies eingeben: ").strip()
+
 def add_test_row():
     """Fügt eine Test-Zeile zur RACOON Publikationstabelle hinzu"""
-    
     print("=== RACOON Publikationen - Test Update ===")
     print("Füge Test-Zeile hinzu...")
     
     # SSO-Session erstellen
     confluence_sso = ConfluenceSSO("https://wms.diz-ag.med.ovgu.de/")
     
-    # Cookies aus dem letzten erfolgreichen Login wiederverwenden
+    # Automatisches Cookie-Management
     cookie_header = input("Geben Sie Ihre Cookies ein (oder Enter für gespeicherte): ").strip()
+    if not cookie_header:
+        cookie_header = get_cookies()
     
     if not cookie_header:
-        # Verwende die gleichen Cookies wie vorher
-        cookie_header = "JSESSIONID=FDF7EA568195E4719718F668128D0CAC; seraph.confluence=302547384:a12fdc95ed4c55b7ce9913674db0e9d4091c5d03"
-        print("📋 Verwende gespeicherte Cookies...")
+        print("❌ Keine Cookies verfügbar!")
+        return False
     
     if not confluence_sso.login_with_cookies(cookie_header):
         print("❌ Cookie-Login fehlgeschlagen!")
@@ -38,11 +58,22 @@ def add_test_row():
         
         current_content = page['body']['storage']['value']
         current_version = page['version']['number']
-        
         print(f"✅ Seite geladen: Version {current_version}")
         
-        # 2. Test-Zeile erstellen
-        test_row = """<tr><td><p>TEST</p></td><td><p>TEST</p></td><td>TEST</td><td><p>TEST</p></td><td><div class="content-wrapper"><p><ac:structured-macro ac:name="status-handy" ac:schema-version="1"><ac:parameter ac:name="Status">TEST</ac:parameter></ac:structured-macro></p></div></td><td><div class="content-wrapper"><p>TEST</p></div></td></tr>"""
+        # 2. Test-Zeile erstellen (kompakte Formatierung)
+        test_row = (
+            '<tr>'
+            '<td><p>TEST</p></td>'
+            '<td><p>TEST</p></td>'
+            '<td>TEST</td>'
+            '<td><p>TEST</p></td>'
+            '<td><div class="content-wrapper"><p>'
+            '<ac:structured-macro ac:name="status-handy" ac:schema-version="1">'
+            '<ac:parameter ac:name="Status">TEST</ac:parameter>'
+            '</ac:structured-macro></p></div></td>'
+            '<td><div class="content-wrapper"><p>TEST</p></div></td>'
+            '</tr>'
+        )
         
         # 3. Finde die letzte Zeile der Tabelle (vor </tbody>)
         tbody_end = current_content.rfind('</tbody>')
@@ -57,12 +88,10 @@ def add_test_row():
             test_row + 
             current_content[tbody_end:]
         )
-        
         print("✏️ Test-Zeile wurde eingefügt")
         
         # 5. Seite aktualisieren
         print("🚀 Aktualisiere Confluence-Seite...")
-        
         result = confluence_sso.update_page(
             page_id="165485055",
             title=page['title'],
@@ -75,11 +104,7 @@ def add_test_row():
         print(f"URL: https://wms.diz-ag.med.ovgu.de{result['_links']['webui']}")
         
         # 6. Backup der aktualisierten Version erstellen
-        backup_file = Path("racoon_publications_with_test.html")
-        with open(backup_file, "w", encoding="utf-8") as f:
-            f.write(updated_content)
-        print(f"💾 Backup mit Test-Zeile gespeichert: {backup_file}")
-        
+        confluence_sso.create_backup(updated_content, "racoon_publications_with_test")
         return True
         
     except Exception as e:
@@ -88,13 +113,19 @@ def add_test_row():
 
 def remove_test_row():
     """Entfernt die Test-Zeile wieder"""
-    
     print("=== RACOON Publikationen - Test-Zeile entfernen ===")
     
     # SSO-Session erstellen
     confluence_sso = ConfluenceSSO("https://wms.diz-ag.med.ovgu.de/")
     
-    cookie_header = input("Geben Sie Ihre Cookies ein: ").strip()
+    # Automatisches Cookie-Management
+    cookie_header = input("Geben Sie Ihre Cookies ein (oder Enter für gespeicherte): ").strip()
+    if not cookie_header:
+        cookie_header = get_cookies()
+    
+    if not cookie_header:
+        print("❌ Keine Cookies verfügbar!")
+        return False
     
     if not confluence_sso.login_with_cookies(cookie_header):
         print("❌ Cookie-Login fehlgeschlagen!")
@@ -105,24 +136,47 @@ def remove_test_row():
         page = confluence_sso.get_page("165485055", "body.storage,version")
         current_content = page['body']['storage']['value']
         
-        # Test-Zeile entfernen
-        test_row_pattern = """<tr><td><p>TEST</p></td><td><p>TEST</p></td><td>TEST</td><td><p>TEST</p></td><td><div class="content-wrapper"><p><ac:structured-macro ac:name="status-handy" ac:schema-version="1"><ac:parameter ac:name="Status">TEST</ac:parameter></ac:structured-macro></p></div></td><td><div class="content-wrapper"><p>TEST</p></div></td></tr>"""
+        # Finde die letzte Tabellenzeile (tr) vor </tbody>
+        import re
         
-        if test_row_pattern in current_content:
-            updated_content = current_content.replace(test_row_pattern, "")
-            
-            result = confluence_sso.update_page(
-                page_id="165485055",
-                title=page['title'],
-                content=updated_content,
-                version=page['version']['number']
-            )
-            
-            print(f"✅ Test-Zeile entfernt! Neue Version: {result['version']['number']}")
-            return True
-        else:
-            print("⚠️  Test-Zeile nicht gefunden!")
+        # EINFACHSTE und SICHERSTE Lösung: Rückwärts suchen
+        
+        # 1. Finde die letzte </tr> Position
+        last_tr_end = current_content.rfind('</tr>')
+        if last_tr_end == -1:
+            print("⚠️  Keine Tabellenzeilen gefunden!")
             return False
+        
+        # 2. Suche rückwärts nach dem letzten <tr vor dieser Position
+        search_content = current_content[:last_tr_end]
+        last_tr_start = search_content.rfind('<tr')
+        
+        if last_tr_start == -1:
+            print("⚠️  Letzte TR-Zeile nicht gefunden!")
+            return False
+        
+        # 3. Extrahiere die letzte Zeile
+        last_tr_end_complete = last_tr_end + 5  # +5 für '</tr>'
+        row_content = current_content[last_tr_start:last_tr_end_complete]
+        
+        # 4. Prüfe ob es nicht der Header ist (enthält <th>)
+        if '<th>' in row_content:
+            print("⚠️  Kann Header-Zeile nicht entfernen!")
+            return False
+        
+        print(f"🗑️  Entferne letzte Tabellenzeile: {row_content[:100]}...")
+        
+        # 5. Sichere Entfernung
+        updated_content = current_content[:last_tr_start] + current_content[last_tr_end_complete:]
+        
+        result = confluence_sso.update_page(
+            page_id="165485055",
+            title=page['title'],
+            content=updated_content,
+            version=page['version']['number']
+        )
+        print(f"✅ Letzte Tabellenzeile entfernt! Neue Version: {result['version']['number']}")
+        return True
             
     except Exception as e:
         print(f"❌ Fehler beim Entfernen: {e}")
@@ -130,7 +184,6 @@ def remove_test_row():
 
 def main():
     """Hauptfunktion"""
-    
     if len(sys.argv) > 1:
         if sys.argv[1] == "--add":
             add_test_row()
