@@ -8,9 +8,9 @@ Intelligente Suchstrategie für RACOON-relevante Publikationen
 import sys
 import json
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent))
-from pubmed_explorer import PubMedExplorer
-from racoon_pubmed_mapper import RacoonPubMedMapper
+sys.path.append(str(Path(__file__).parent.parent))
+from pubmed.api_client import PubMedExplorer
+from pubmed.schema_mapper import RacoonPubMedMapper
 
 class RacoonSearchStrategy:
     """Intelligente Suchstrategie für RACOON-relevante Publikationen"""

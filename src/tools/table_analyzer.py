@@ -9,8 +9,8 @@ import sys
 import json
 import re
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent))
-from confluence_sso import ConfluenceSSO
+sys.path.append(str(Path(__file__).parent.parent))
+from core.confluence_sso import ConfluenceSSO
 
 def load_saved_cookies():
     """Lädt gespeicherte Cookies aus der Credentials-Datei"""

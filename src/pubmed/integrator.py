@@ -10,12 +10,16 @@ import json
 import time
 from pathlib import Path
 from datetime import datetime
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(Path(__file__).parent.parent))
 
-from confluence_sso import ConfluenceSSO
-from pubmed_explorer import PubMedExplorer
-from racoon_pubmed_mapper import RacoonPubMedMapper
-from racoon_search_strategy import RacoonSearchStrategy
+from core.confluence_sso import ConfluenceSSO
+from pubmed.api_client import PubMedExplorer
+from pubmed.schema_mapper import RacoonPubMedMapper
+from pubmed.search_strategy import RacoonSearchStrategy
+from core.confluence_sso import ConfluenceSSO
+from pubmed.api_client import PubMedExplorer
+from pubmed.schema_mapper import RacoonPubMedMapper
+from pubmed.search_strategy import RacoonSearchStrategy
 
 class RacoonPubMedIntegrator:
     """Vollständige PubMed-RACOON Integration"""
@@ -33,7 +37,7 @@ class RacoonPubMedIntegrator:
     def load_saved_cookies(self):
         """Lädt gespeicherte Cookies"""
         try:
-            with open('confluence_credentials.json', 'r', encoding='utf-8') as f:
+            with open('config/confluence_credentials.json', 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 return data.get('cookies', '')
         except (FileNotFoundError, json.JSONDecodeError, KeyError):
