@@ -1,15 +1,69 @@
-# 🧬 PubMed Integration für RACOON
+# 🧬 PubMed Integration - Technische Dokumentation
 
-Diese Dokumentation beschreibt die neu entwickelte **automatische PubMed-Integration** für die RACOON Publikationsdatenbank.
+## 📊 System-Architektur
 
-## 📊 **System-Übersicht**
+### Module-Übersicht
+- **`src/pubmed/api_client.py`** - NCBI E-utilities API Integration
+- **`src/pubmed/search_strategy.py`** - Multi-dimensionale Suchstrategie  
+- **`src/pubmed/schema_mapper.py`** - PubMed ↔ RACOON Format-Konvertierung
+- **`src/pubmed/integrator.py`** - Vollständige Integration mit Confluence
 
-### **Was wurde entwickelt:**
-✅ **PubMed API Integration** - Vollständige NCBI E-utilities Integration  
-✅ **Schema-Mapping** - Automatische Konvertierung PubMed ↔ RACOON  
-✅ **Intelligente Suchstrategie** - Multi-dimensionale Publikations-Discovery  
-✅ **Relevanz-Scoring** - Automatische RACOON-Relevanz-Bewertung  
-✅ **Vollständige Automatisierung** - End-to-End Publikations-Integration  
+### Workflow
+1. **Discovery** → PubMed API Suche mit intelligenten Queries
+2. **Scoring** → RACOON-Relevanz-Bewertung (0-100%)
+3. **Mapping** → Automatische Format-Konvertierung
+4. **Integration** → Confluence-Table Updates mit Backup
+
+## 🎯 Suchstrategie
+
+### Query-Types
+- **Keywords:** `(COVID-19) AND (radiology) AND (chest CT)`
+- **Autoren:** `"Surov A"[Author] AND COVID-19`
+- **Institutionen:** `"University Hospital Magdeburg"[Affiliation]`
+- **Temporal:** `COVID-19 AND "2020"[Date] : "2025"[Date]`
+
+### Relevanz-Scoring
+- 30pts: COVID-19 Keywords
+- 25pts: Imaging/Radiology Terms
+- 25pts: RACOON-Autoren-Match  
+- 10pts: Relevante Journals
+- 10pts: COVID-Zeitraum
+
+## 🔄 Schema-Mapping
+
+| PubMed | RACOON | Transformation |
+|--------|--------|----------------|
+| Title + DOI + PMID | PubMed DOI | Combined mit Links |
+| Authors | Personen | "Nachname I, Nachname I" |
+| PubDate | Jahr/Monat | YYYY/MM Format |
+| Auto-Gen | Förderhinweis | JA [70000+Nummer] |
+
+## ⚙️ API-Konfiguration
+
+### Rate Limits
+- Max 3 requests/second
+- 1 second delay zwischen Queries
+- 10 Ergebnisse pro Query (Standard)
+
+### Error Handling
+- XML-Parse-Errors abgefangen
+- Automatische Retry-Logik
+- Graceful Degradation bei API-Fehlern
+
+## 🧪 Testing
+
+### Demo-Ergebnisse
+- **7 Publikationen** entdeckt
+- **2 relevante Kandidaten** (Score ≥ 60%)
+- **HTML-Generierung** für Confluence bereit
+
+### Validierung
+- Pflichtfeld-Checks
+- Format-Validierung  
+- Duplikat-Erkennung via PMID
+
+---
+*Für Verwendung siehe Haupt-README.md*  
 
 ### **Neue Tools:**
 
