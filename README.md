@@ -1,78 +1,189 @@
-# Sichere Confluence API Nutzung
+# pyRacoonConfluence
 
-## Übersicht
-Dieses Skript stellt eine sichere Verbindung zu Ihrem selbst-gehosteten Confluence Server her.
+**Einfaches Python-Tool für RACOON Publikations-Management in Confluence**
 
-## Erste Einrichtung
+## 🎯 Überblick
 
-### 1. Anmeldedaten einrichten
+Ein fokussiertes Tool zur sicheren Verwaltung der RACOON-Publikationsdaten in Confluence über SSO-Authentifizierung. Entwickelt speziell für das Berichtswesen der RACOON-Forschungsgemeinschaft.
+
+## ✨ Kernfunktionen
+
+- 🔐 **SSO-Authentifizierung** - Sichere Anmeldung über Browser-Cookies
+- 📊 **Publikations-Management** - Hinzufügen, Testen und Verwalten von Publikationen
+- 💾 **Automatische Backups** - Sichere Datensicherung vor jeder Änderung
+- 🧪 **Sicheres Testen** - Test-Modus mit automatischer Bereinigung
+
+## 🚀 Schnellstart
+
+### Voraussetzungen
+
+- Python 3.8+
+- Zugriff auf RACOON Confluence-Instanz
+- Gültige SSO-Anmeldung
+
+### Installation
+
 ```bash
-python confluence_update.py --setup
+# Repository klonen
+git clone https://github.com/niklas-lackner/pyRacoonConfluence.git
+cd pyRacoonConfluence
+
+# Virtual Environment erstellen
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+
+# Dependencies installieren
+pip install -r requirements.txt
 ```
 
-Wählen Sie eine der Sicherheitsoptionen:
+### Verwendung
 
-### Option 1: Verschlüsselte Speicherung (EMPFOHLEN) 🔐
-- Passwort wird mit AES-Verschlüsselung gespeichert
-- Erstellt zwei Dateien:
-  - `confluence_key.key` - Verschlüsselungsschlüssel
-  - `confluence_credentials.json` - Verschlüsselte Anmeldedaten
-- **WICHTIG**: Beide Dateien sind erforderlich und sollten sicher aufbewahrt werden
+#### 1. SSO-Authentifizierung einrichten
 
-### Option 2: Einfache Textdatei (UNSICHER) ⚠️
-- Erstellt `password.txt` mit unverschlüsseltem Passwort
-- **NUR FÜR TESTS** verwenden
-- Datei nach Gebrauch löschen!
-
-### Option 3: Manuelle Eingabe (SICHERSTE)
-- Passwort wird bei jeder Ausführung abgefragt
-- Keine Speicherung auf der Festplatte
-
-## Verwendung
-
-### Verbindung testen
 ```bash
-python confluence_update.py
+python confluence_sso.py --manual-login
 ```
 
-### Anmeldedaten neu konfigurieren
-```bash
-python confluence_update.py --setup
+**Cookie-Extraktion:**
+1. Öffnen Sie Ihren Browser und loggen Sie sich in Confluence ein
+2. Öffnen Sie Entwicklertools (F12) → Network Tab
+3. Besuchen Sie: `https://wms.diz-ag.med.ovgu.de/rest/api/space`
+4. Kopieren Sie die Cookie-Header aus dem Request
+
+**Cookie-Format:**
+```
+JSESSIONID=ABC123...; seraph.confluence=XYZ789...
 ```
 
-## Sicherheitshinweise
+#### 2. Publikationen testen
 
-### ✅ SICHERE Praktiken:
-- Verwenden Sie verschlüsselte Speicherung
-- Halten Sie `confluence_key.key` sicher
-- Teilen Sie die Schlüsseldatei nicht
-- Verwenden Sie starke Passwörter
-
-### ❌ UNSICHERE Praktiken:
-- Passwörter im Quellcode
-- Unverschlüsselte Textdateien
-- Schlüssel in Git-Repositories
-- Schwache Passwörter
-
-## Dateien
-
-- `confluence_update.py` - Hauptskript
-- `confluence_key.key` - Verschlüsselungsschlüssel (GEHEIM!)
-- `confluence_credentials.json` - Verschlüsselte Anmeldedaten
-- `password.txt` - Temporäre Passwort-Datei (falls verwendet)
-
-## Fehlerbehebung
-
-### "ModuleNotFoundError"
+**Test-Publikation hinzufügen:**
 ```bash
-pip install atlassian-python-api cryptography
+python racoon_test_update.py --add
 ```
 
-### "Unauthorized (401)"
-- Prüfen Sie Username und Passwort
-- Führen Sie `python confluence_update.py --setup` aus
-- Kontaktieren Sie Ihren Confluence-Administrator
+**Test-Publikation entfernen:**
+```bash
+python racoon_test_update.py --remove
+```
 
-### Schlüssel verloren
-- Führen Sie `python confluence_update.py --setup` aus
-- Wählen Sie Option 1 für neue verschlüsselte Speicherung
+**Verbindung testen:**
+```bash
+python confluence_sso.py
+```
+
+## 📁 Projektstruktur
+
+```
+pyRacoonConfluence/
+├── confluence_sso.py          # SSO-Authentifizierung (Kern-Modul)
+├── racoon_test_update.py      # Publikations-Management
+├── requirements.txt           # Python-Dependencies
+├── README.md                  # Diese Dokumentation
+├── LICENSE                    # MIT-Lizenz
+└── .gitignore                 # Git-Ausschlüsse
+```
+
+## 🔧 Kern-Module
+
+### confluence_sso.py
+**SSO-Authentifizierungs-Handler**
+- Cookie-basierte Anmeldung
+- Session-Management
+- API-Zugriff auf 14 Confluence-Spaces
+- Verbindungsdiagnose
+
+### racoon_test_update.py
+**RACOON Publikations-Manager**
+- Sichere Test-Operationen
+- Automatische Backup-Erstellung
+- Publikationstabellen-Management
+- Status-Makro-Handling (JA/NEIN)
+
+## 📊 RACOON Publikations-Schema
+
+Die verwaltete Tabelle enthält folgende Spalten:
+
+| Spalte | Beschreibung | Beispiel |
+|--------|--------------|----------|
+| Nummer | Publikationsnummer | 63 |
+| Jahr/Monat | Publikationsdatum | 2024/12 |
+| Standort | Institution | UK Frankfurt |
+| Beteiligte Personen | Autoren | Smith J, Doe A |
+| Förderhinweis NUM/RACOON | Förderanerkennung | ✅ JA / ❌ NEIN |
+| PubMed DOI | Publikationslinks | doi: 10.1234/example |
+
+## 🛡️ Sicherheitsfeatures
+
+- **Keine Klartext-Passwörter** - Verwendet Browser-Session-Cookies
+- **Automatische Backups** - Erstellt Sicherungen vor Änderungen
+- **Session-Validierung** - Überprüft Cookie-Gültigkeit
+- **Sichere Speicherung** - Sensible Daten in `.gitignore`
+
+## 🧪 Sicherheits-Testing
+
+Das System bietet verschiedene Test-Modi:
+
+```bash
+# Vollständiger Test-Zyklus
+python racoon_test_update.py --add    # Test-Publikation hinzufügen
+python racoon_test_update.py --remove # Test-Publikation entfernen
+
+# Nur Verbindung testen (ohne Änderungen)
+python confluence_sso.py
+```
+
+## ⚠️ Wichtige Hinweise
+
+- **SSO erforderlich** - Funktioniert nur mit SSO-aktivierten Confluence-Instanzen
+- **Cookie-Ablauf** - Browser-Cookies verfallen typischerweise nach wenigen Stunden
+- **Backup-Politik** - Erstellt immer Backups vor Änderungen
+- **Zugriffskontrolle** - Respektiert Confluence-Berechtigungen
+
+## 🆘 Fehlerbehebung
+
+### Häufige Probleme
+
+**401 Unauthorized Fehler**
+- Überprüfen Sie, ob Ihre Browser-Cookies noch gültig sind
+- Extrahieren Sie neue Cookies aus einer frischen Browser-Session
+- Stellen Sie sicher, dass Sie Zugriff auf den Confluence-Space haben
+
+**Verbindungstimeout**
+- Überprüfen Sie Ihre Netzwerkverbindung
+- Verifizieren Sie, dass die Confluence-URL korrekt ist
+- Stellen Sie sicher, dass die Firewall API-Zugriff erlaubt
+
+**Fehlende Dependencies**
+```bash
+pip install --upgrade -r requirements.txt
+```
+
+### Logs und Backups
+
+- Backup-Dateien werden als `.html` im Projektverzeichnis gespeichert
+- Cookie-Sessions werden automatisch validiert
+- Alle API-Operationen werden mit Status-Codes protokolliert
+
+## 📝 Lizenz
+
+Dieses Projekt steht unter der MIT-Lizenz - siehe [LICENSE](LICENSE) für Details.
+
+## 🏆 Danksagungen
+
+- **RACOON Research Network**
+- **NUM (Netzwerk Universitätsmedizin)**
+- **BMBF (Bundesministerium für Bildung und Forschung)**
+- **Alle beteiligten Forschungseinrichtungen**
+
+---
+
+**Entwickelt mit ❤️ für die RACOON-Forschungsgemeinschaft**
+
+### 🔗 Nützliche Links
+
+- **Repository**: https://github.com/niklas-lackner/pyRacoonConfluence
+- **Issues**: https://github.com/niklas-lackner/pyRacoonConfluence/issues
+- **RACOON-Netzwerk**: https://www.netzwerk-universitaetsmedizin.de/projekte/racoon
