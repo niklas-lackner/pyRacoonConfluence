@@ -1,0 +1,30 @@
+# Core dependencies for pyRacoonConfluence
+# RACOON Confluence API toolkit
+
+# HTTP requests and session management
+requests>=2.31.0
+
+# Confluence API interaction
+atlassian-python-api>=3.41.0
+
+# Encryption and security
+cryptography>=41.0.0
+
+# Optional: Command line interface
+click>=8.1.0
+
+# Optional: Configuration management
+python-dotenv>=1.0.0
+
+# Optional: Logging and debugging
+colorama>=0.4.6
+
+# Optional: HTML parsing and manipulation
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Development dependencies (uncomment if needed)
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# black>=23.0.0
+# flake8>=6.0.0
