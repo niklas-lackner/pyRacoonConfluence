@@ -80,9 +80,15 @@ python confluence_sso.py
 pyRacoonConfluence/
 ├── confluence_sso.py          # SSO-Authentifizierung (Kern-Modul)
 ├── racoon_test_update.py      # Publikations-Management
+├── racoon_pubmed_integrator.py # **NEU:** PubMed Integration
+├── analyze_publications.py    # **NEU:** Tabellenanalyse
+├── pubmed_explorer.py         # **NEU:** PubMed API Explorer
+├── racoon_pubmed_mapper.py    # **NEU:** Schema-Mapping
+├── racoon_search_strategy.py  # **NEU:** Suchstrategie
 ├── backups/                   # Zeitgestempelte Backup-Dateien
 ├── requirements.txt           # Python-Dependencies
 ├── README.md                  # Diese Dokumentation
+├── PUBMED_INTEGRATION.md      # **NEU:** PubMed Dokumentation
 ├── LICENSE                    # MIT-Lizenz
 └── .gitignore                 # Git-Ausschlüsse
 ```
@@ -102,6 +108,17 @@ pyRacoonConfluence/
 - Automatische Backup-Erstellung
 - Publikationstabellen-Management
 - Status-Makro-Handling (JA/NEIN)
+
+### racoon_pubmed_integrator.py ⭐ **NEU**
+**Vollständige PubMed Integration**
+- Automatische Publikations-Discovery über PubMed API
+- Intelligente RACOON-Relevanz-Bewertung (0-100%)
+- Schema-Mapping PubMed ↔ RACOON Format
+- Sicherer Dry-Run Modus für Tests
+- Integriertes Backup-System
+- Duplikat-Erkennung und Validierung
+
+📚 **Detaillierte Dokumentation:** [PUBMED_INTEGRATION.md](PUBMED_INTEGRATION.md)
 
 ## 📊 RACOON Publikations-Schema
 
